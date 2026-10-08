@@ -5,7 +5,6 @@
 # Fusion: CSFA.
 # Refine: MANet.
 
-
 nc: 80
 scales:
   s: [1.00, 1.00, 512]
@@ -13,7 +12,6 @@ stage_repeats:
   s: [1, 1, 1, 1]
 stage_channels:
   s: [64, 128, 256, 512]
-
 
 backbone:
   - [-1, 1, HGStem, [32, 64]] # 0-P2/4
