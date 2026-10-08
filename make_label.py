@@ -1,11 +1,12 @@
-import os
-import json
-from tqdm import tqdm
 import argparse
+import json
+import os
+
+from tqdm import tqdm
 
 # 生成训练集标签（换成自己的路径）
-json_path = r'D:\project\Pytorch_Projects\tinyperson\release\rgb_test.json'
-label_path = r'D:\project\Pytorch_Projects\tinyperson\test\labels'
+json_path = r"D:\project\Pytorch_Projects\tinyperson\release\rgb_test.json"
+label_path = r"D:\project\Pytorch_Projects\tinyperson\test\labels"
 
 # 生成验证集标签 （换成自己的路径）
 # json_path = r'/mnt/inaisfs/user-fs/userA02/DataSets/coco2017/annotationsinstances_train2017.json'
@@ -13,16 +14,14 @@ label_path = r'D:\project\Pytorch_Projects\tinyperson\test\labels'
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--json_path', default=json_path, type=str,
-                    help="input: coco format(json)")
-parser.add_argument('--save_path', default=label_path, type=str,
-                    help="specify where to save the output dir of labels")
+parser.add_argument("--json_path", default=json_path, type=str, help="input: coco format(json)")
+parser.add_argument("--save_path", default=label_path, type=str, help="specify where to save the output dir of labels")
 arg = parser.parse_args()
 
 
 def convert(size, box):
-    dw = 1. / (size[0])
-    dh = 1. / (size[1])
+    dw = 1.0 / (size[0])
+    dh = 1.0 / (size[1])
     x = box[0] + box[2] / 2.0
     y = box[1] + box[3] / 2.0
     w = box[2]
@@ -35,37 +34,37 @@ def convert(size, box):
     return (x, y, w, h)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     json_file = arg.json_path  # COCO Object Instance 类型的标注
     ana_txt_save_path = arg.save_path  # 保存的路径
 
-    data = json.load(open(json_file, 'r'))
+    data = json.load(open(json_file))
     if not os.path.exists(ana_txt_save_path):
         os.makedirs(ana_txt_save_path)
 
     id_map = {}
-    for i, category in enumerate(data['categories']):
-        id_map[category['id']] = i
+    for i, category in enumerate(data["categories"]):
+        id_map[category["id"]] = i
 
     # 通过事先建表来降低时间复杂度
     max_id = 0
-    for img in data['images']:
-        max_id = max(max_id, img['id'])
+    for img in data["images"]:
+        max_id = max(max_id, img["id"])
 
     img_ann_dict = [[] for i in range(max_id + 1)]
-    for i, ann in enumerate(data['annotations']):
-        img_ann_dict[ann['image_id']].append(i)
+    for i, ann in enumerate(data["annotations"]):
+        img_ann_dict[ann["image_id"]].append(i)
 
-    for img in tqdm(data['images']):
+    for img in tqdm(data["images"]):
         filename = img["file_name"]
         img_width = img["width"]
         img_height = img["height"]
         img_id = img["id"]
         head, tail = os.path.splitext(filename)
         ana_txt_name = head + ".txt"
-        f_txt = open(os.path.join(ana_txt_save_path, ana_txt_name), 'w')
+        f_txt = open(os.path.join(ana_txt_save_path, ana_txt_name), "w")
         for ann_id in img_ann_dict[img_id]:
-            ann = data['annotations'][ann_id]
+            ann = data["annotations"][ann_id]
             box = convert((img_width, img_height), ann["bbox"])
-            f_txt.write("%s %s %s %s %s\n" % (id_map[ann["category_id"]], box[0], box[1], box[2], box[3]))
+            f_txt.write("{} {} {} {} {}\n".format(id_map[ann["category_id"]], box[0], box[1], box[2], box[3]))
         f_txt.close()
