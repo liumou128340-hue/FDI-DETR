@@ -1,12 +1,13 @@
-﻿# Ultralytics 妫ｅ啯鐣?AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics 妫ｅ啯鐣?AGPL-3.0 License - https://ultralytics.com/license
 """Block modules."""
 
 from __future__ import annotations
 
 import os
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
@@ -14,21 +15,22 @@ from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad
 from .transformer import TransformerBlock
 
 __all__ = (
-    "DiffFreq_Bottleneck","DiffFreq_MultiConv",
-    "HighFreqContrastAware","MidFreqDirectional","LowFreqSemantic",
-    "MDPT","CSSCC_FC","CSSCCFusion","FSDDown","UP","AMRC",
+    "AMRC",
     "C1",
     "C2",
     "C2PSA",
     "C3",
     "C3TR",
     "CIB",
+    "CSSCC_FC",
     "DFL",
     "ELAN1",
+    "MDPT",
     "PSA",
     "SPP",
     "SPPELAN",
     "SPPF",
+    "UP",
     "AConv",
     "ADown",
     "Attention",
@@ -44,13 +46,20 @@ __all__ = (
     "C3x",
     "CBFuse",
     "CBLinear",
+    "CSSCCFusion",
     "ContrastiveHead",
+    "DiffFreq_Bottleneck",
+    "DiffFreq_MultiConv",
+    "FSDDown",
     "GhostBottleneck",
     "HGBlock",
     "HGStem",
+    "HighFreqContrastAware",
     "ImagePoolingAttn",
-    "Proto",
+    "LowFreqSemantic",
     "MANet",
+    "MidFreqDirectional",
+    "Proto",
     "RepC3",
     "RepNCSPELAN4",
     "RepVGGDW",
@@ -88,10 +97,8 @@ class MidFreqDirectional(nn.Module):
 
     def __init__(self, dim, k=5, reduction=8):
         super().__init__()
-        self.dw_h = nn.Conv2d(dim, dim, (1, k), padding=(0, k // 2),
-                              groups=dim, bias=False)
-        self.dw_v = nn.Conv2d(dim, dim, (k, 1), padding=(k // 2, 0),
-                              groups=dim, bias=False)
+        self.dw_h = nn.Conv2d(dim, dim, (1, k), padding=(0, k // 2), groups=dim, bias=False)
+        self.dw_v = nn.Conv2d(dim, dim, (k, 1), padding=(k // 2, 0), groups=dim, bias=False)
         self.dw_d1 = DiagonalShiftDWConv(dim, k, anti=False)
         self.dw_d2 = DiagonalShiftDWConv(dim, k, anti=True)
         self.direction_selector = nn.Sequential(
@@ -146,15 +153,9 @@ class HighFreqContrastAware(nn.Module):
         self.dim = dim
         self.window_sizes = window_sizes
 
-        self.local_mean_convs = nn.ModuleList([
-            nn.AvgPool2d(k, stride=1, padding=k // 2)
-            for k in window_sizes
-        ])
+        self.local_mean_convs = nn.ModuleList([nn.AvgPool2d(k, stride=1, padding=k // 2) for k in window_sizes])
 
-        self.cv_proj = nn.Sequential(
-            nn.Conv2d(len(window_sizes), dim, 1, bias=False),
-            nn.Sigmoid()
-        )
+        self.cv_proj = nn.Sequential(nn.Conv2d(len(window_sizes), dim, 1, bias=False), nn.Sigmoid())
 
         self.edge_refine = nn.Sequential(
             nn.Conv2d(dim, dim, 3, padding=1, groups=dim, bias=False),
@@ -193,9 +194,11 @@ class HighFreqContrastAware(nn.Module):
         phase = band_fft / (torch.abs(band_fft) + 1e-8)
         return (enhanced_mag * phase) + (band_fft * self.residual_scale)
 
+
 # ============================================================
 # DiffFreq_MultiConv 閻?鐎瑰壊鍠栫槐鎾诲礌閺嶎収鏆ユ繛鍫ユ涧椤︹晠鎮堕崱娆愮暠闁哄秶顭堢缓鎯熼垾铏仴
 # ============================================================
+
 
 class DiagonalShiftDWConv(nn.Module):
     """Strict diagonal depthwise convolution implemented with shift-sum."""
@@ -229,9 +232,8 @@ class DiagonalShiftDWConv(nn.Module):
             dx = -offset if self.anti else offset
             ys = p + dy
             xs = p + dx
-            out = out + x_pad[:, :, ys:ys + H, xs:xs + W] * self.weight[:, i].view(1, C, 1, 1)
+            out = out + x_pad[:, :, ys : ys + H, xs : xs + W] * self.weight[:, i].view(1, C, 1, 1)
         return out + self.bias.view(1, C, 1, 1)
-
 
 
 class DilatedRFBottleneck(nn.Module):
@@ -279,7 +281,6 @@ class DilatedRFBottleneck(nn.Module):
         return self.out(upper * lower)
 
 
-
 class PairChannelAttention(nn.Module):
     """Channel attention for a matched spatial-frequency pair."""
 
@@ -315,20 +316,12 @@ class DiffFreq_MultiConv(nn.Module):
         self.freq_ch = dim
         self.spatial_splits = None
 
-        self.in_conv = nn.Sequential(
-            nn.Conv2d(dim, dim * 2, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(dim * 2),
-            nn.GELU()
-        )
-        self.out_conv = nn.Sequential(
-            nn.Conv2d(dim * 2, dim, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(dim)
-        )
+        self.in_conv = nn.Sequential(nn.Conv2d(dim, dim * 2, 1, 1, 0, bias=False), nn.BatchNorm2d(dim * 2), nn.GELU())
+        self.out_conv = nn.Sequential(nn.Conv2d(dim * 2, dim, 1, 1, 0, bias=False), nn.BatchNorm2d(dim))
 
-        self.texture_dw = nn.ModuleList([
-            nn.Conv2d(dim, dim, k, padding=k // 2, groups=dim, bias=False)
-            for k in self.kernel_sizes
-        ])
+        self.texture_dw = nn.ModuleList(
+            [nn.Conv2d(dim, dim, k, padding=k // 2, groups=dim, bias=False) for k in self.kernel_sizes]
+        )
         self.texture_selector = nn.Sequential(
             nn.Conv2d(2, 8, 3, padding=1, bias=False),
             nn.GELU(),
@@ -372,7 +365,7 @@ class DiffFreq_MultiConv(nn.Module):
         tex = [conv(x) for conv in self.texture_dw]
         scale_logits = self.texture_selector(self._spatial_pool2(x))
         scale_mask = torch.softmax(scale_logits, dim=1)
-        out = sum(t * scale_mask[:, i:i + 1] for i, t in enumerate(tex))
+        out = sum(t * scale_mask[:, i : i + 1] for i, t in enumerate(tex))
         return self.texture_fuse(out)
 
     def _edge_branch(self, x):
@@ -383,12 +376,7 @@ class DiffFreq_MultiConv(nn.Module):
         edge_sum = e0 + e1 + e2 + e3
         edge_logits = self.edge_selector(self._spatial_pool2(edge_sum))
         edge_mask = torch.softmax(edge_logits, dim=1)
-        return (
-            e0 * edge_mask[:, 0:1]
-            + e1 * edge_mask[:, 1:2]
-            + e2 * edge_mask[:, 2:3]
-            + e3 * edge_mask[:, 3:4]
-        )
+        return e0 * edge_mask[:, 0:1] + e1 * edge_mask[:, 1:2] + e2 * edge_mask[:, 2:3] + e3 * edge_mask[:, 3:4]
 
     def _ablation_mode(self):
         mode = os.environ.get("DIFFFREQ_ABLATION", "full").strip().lower()
@@ -406,9 +394,7 @@ class DiffFreq_MultiConv(nn.Module):
         }
         mode = aliases.get(mode, mode)
         if mode not in {"full", "sf", "spatial", "freq"}:
-            raise ValueError(
-                "Invalid DIFFFREQ_ABLATION mode. Use one of: full, sf, spatial, freq."
-            )
+            raise ValueError("Invalid DIFFFREQ_ABLATION mode. Use one of: full, sf, spatial, freq.")
         return mode
 
     def _forward_spatial_path(self, spatial_feat):
@@ -418,7 +404,7 @@ class DiffFreq_MultiConv(nn.Module):
         return texture, edge, rf
 
     def _forward_frequency_path(self, freq_feat):
-        x_fft = torch.fft.fft2(freq_feat, norm='backward')
+        x_fft = torch.fft.fft2(freq_feat, norm="backward")
         H, W = freq_feat.shape[2:]
         device = freq_feat.device
 
@@ -431,9 +417,9 @@ class DiffFreq_MultiConv(nn.Module):
         mid_fft = self.mid_branch(x_fft * mask_m)
         high_fft = self.high_branch(x_fft * mask_h)
 
-        low_sp = torch.abs(torch.fft.ifft2(low_fft, dim=(-2, -1), norm='backward'))
-        mid_sp = torch.abs(torch.fft.ifft2(mid_fft, dim=(-2, -1), norm='backward'))
-        high_sp = torch.abs(torch.fft.ifft2(high_fft, dim=(-2, -1), norm='backward'))
+        low_sp = torch.abs(torch.fft.ifft2(low_fft, dim=(-2, -1), norm="backward"))
+        mid_sp = torch.abs(torch.fft.ifft2(mid_fft, dim=(-2, -1), norm="backward"))
+        high_sp = torch.abs(torch.fft.ifft2(high_fft, dim=(-2, -1), norm="backward"))
         return low_sp, mid_sp, high_sp
 
     def _fuse_frequency_path(self, low_sp, mid_sp, high_sp, freq_feat):
@@ -477,13 +463,11 @@ class DiffFreq_MultiConv(nn.Module):
         if key in self._mask_cache:
             return self._mask_cache[key]
         crow, ccol = H // 2, W // 2
-        y, x = torch.meshgrid(
-            torch.arange(H, device=device),
-            torch.arange(W, device=device), indexing='ij')
+        y, x = torch.meshgrid(torch.arange(H, device=device), torch.arange(W, device=device), indexing="ij")
         dist = torch.sqrt((y - crow).float() ** 2 + (x - ccol).float() ** 2)
         max_d = min(crow, ccol) if min(crow, ccol) > 0 else 1
         r_c = (idx + 0.5) / total * max_d
-        mask = torch.exp(-((dist - r_c) ** 2) / (2 * sigma ** 2))
+        mask = torch.exp(-((dist - r_c) ** 2) / (2 * sigma**2))
         mask = mask.unsqueeze(0).unsqueeze(0)
         self._mask_cache[key] = mask
         return mask
@@ -492,6 +476,7 @@ class DiffFreq_MultiConv(nn.Module):
 # ============================================================
 # DiffFreq_Bottleneck wrapper
 # ============================================================
+
 
 class DiffFreq_Bottleneck(nn.Module):
     """Wrapper for DiffFreq_MultiConv."""
@@ -510,10 +495,10 @@ class DiffFreq_Bottleneck(nn.Module):
         out = self.diff_freq(x)
         return out + self.shortcut_scale * x if self.add else out
 
+
 class MDPT_Attention(nn.Module):
-    """
-    MDPT 闁告劕鎳橀崕鎾儍閸曨剛鍨奸柛鎴濇閸ゆ粌鈻旈妸锕€澹堥柛鏃€绋掕啯闁秆勵殣缁辨瑩鏌呴崒鐐插赋 C*H*W 缂備焦娼欑€规娊鎯冮崟顔兼婵炲鍔嶉崜浼村礉濞戝磭绀?
-    """
+    """MDPT 闁告劕鎳橀崕鎾儍閸曨剛鍨奸柛鎴濇閸ゆ粌鈻旈妸锕€澹堥柛鏃€绋掕啯闁秆勵殣缁辨瑩鏌呴崒鐐插赋 C*H*W 缂備焦娼欑€规娊鎯冮崟顔兼婵炲鍔嶉崜浼村礉濞戝磭绀?"""
+
     def __init__(self):
         super().__init__()
         # self.c_in = c_in
@@ -527,12 +512,12 @@ class MDPT_Attention(nn.Module):
         self.v_pool = nn.AdaptiveAvgPool2d((None, 1))
 
     def forward(self, x):
-        B, C, H, W = x.shape
+        _B, _C, _H, _W = x.shape
 
         # 1. 闁汇垻鍠愰崹?Q, K, V
-        q = x.flatten(2)  # (B, C, H*W)
+        x.flatten(2)  # (B, C, H*W)
         # k = self.k_conv(x)
-        k = self.k_pool(x).flatten(2)  # (B, C, H_new)
+        self.k_pool(x).flatten(2)  # (B, C, H_new)
         # v = self.v_conv(x)
         v = self.v_pool(x).flatten(2)  # (B, C, H_new)
 
@@ -719,9 +704,7 @@ class CSSCCFusion(nn.Module):
             nn.Sigmoid(),
         )
         self.out_proj = (
-            nn.Identity()
-            if out_scale == 2
-            else nn.Sequential(nn.Conv2d(2 * c2, c2, 1, bias=False), nn.BatchNorm2d(c2))
+            nn.Identity() if out_scale == 2 else nn.Sequential(nn.Conv2d(2 * c2, c2, 1, bias=False), nn.BatchNorm2d(c2))
         )
 
     def forward(self, x):
@@ -885,6 +868,7 @@ class ConcatSCFusion(nn.Module):
         select = select * self.weight_ca(select)
         return select
 
+
 class FSDDown(nn.Module):
     """Frequency-spatial detail-preserving downsampling."""
 
@@ -967,6 +951,7 @@ class FSDDown(nn.Module):
         w_wave, w_spatial = weight.chunk(2, dim=1)
         out = self.rho * w_wave * wave + w_spatial * spatial
         return self.out_proj(out)
+
 
 class CSSCC_FC(nn.Module):
     """Multi-scale feature fusion with complementary attention recalibration."""
@@ -1348,6 +1333,7 @@ class MANet(nn.Module):
         outs = [y0, y1, y2, y3]
         outs.extend(m(outs[-1]) for m in self.m)
         return self.cv_final(torch.cat(outs, 1))
+
 
 class RepC3(nn.Module):
     """Rep C3."""
@@ -3056,17 +3042,3 @@ class RealNVP(nn.Module):
             self.float()
         z, log_det = self.backward_p(x)
         return self.prior.log_prob(z) + log_det
-
-
-
-
-
-
-
-
-
-
-
-
-
-

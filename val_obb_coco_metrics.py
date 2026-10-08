@@ -1,10 +1,11 @@
-from pathlib import Path
-from collections import defaultdict
 import json
 import os
+from collections import defaultdict
+from pathlib import Path
 
 import yaml
 from PIL import Image
+
 from ultralytics import YOLO
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -42,10 +43,10 @@ def polygon_area(poly):
 
 
 def _signed_area(pts):
-    return sum(
-        pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
-        for i in range(len(pts))
-    ) * 0.5
+    return (
+        sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1] for i in range(len(pts)))
+        * 0.5
+    )
 
 
 def _inside(p, a, b, orientation):
@@ -195,8 +196,8 @@ def load_predictions(pred_json, image_ids):
 
 
 def compute_ap(recalls, precisions):
-    mrec = [0.0] + recalls + [1.0]
-    mpre = [0.0] + precisions + [0.0]
+    mrec = [0.0, *recalls, 1.0]
+    mpre = [0.0, *precisions, 0.0]
     for i in range(len(mpre) - 2, -1, -1):
         mpre[i] = max(mpre[i], mpre[i + 1])
     ap = 0.0

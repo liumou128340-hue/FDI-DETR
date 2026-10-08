@@ -1,5 +1,6 @@
-from ultralytics import YOLO
 import os
+
+from ultralytics import YOLO
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -10,14 +11,23 @@ if __name__ == "__main__":
 
     results = model.train(
         task="obb",
-        data='../CODrone/CODrone.yaml',
-        imgsz=640, amp=False,deterministic=False,
-        batch=8,workers=8,
-
-        val=True, epochs=400, patience=20,
-        project="CODrone", name="AM640",
-
-        optimizer="AdamW", lr0=0.001, cos_lr=False, lrf=0.1,
-        close_mosaic=50, weight_decay=0.0005, warmup_epochs=5,warmup_bias_lr=0.0001,
-
+        data="../CODrone/CODrone.yaml",
+        imgsz=640,
+        amp=False,
+        deterministic=False,
+        batch=8,
+        workers=8,
+        val=True,
+        epochs=400,
+        patience=20,
+        project="CODrone",
+        name="AM640",
+        optimizer="AdamW",
+        lr0=0.001,
+        cos_lr=False,
+        lrf=0.1,
+        close_mosaic=50,
+        weight_decay=0.0005,
+        warmup_epochs=5,
+        warmup_bias_lr=0.0001,
     )
