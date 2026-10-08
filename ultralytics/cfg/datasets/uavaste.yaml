@@ -1,0 +1,9 @@
+path: /userA02/lht/uavaste
+
+train: train/images
+val: val/images
+test: test-dev/images
+
+nc: 1
+names:
+  0: rubbish

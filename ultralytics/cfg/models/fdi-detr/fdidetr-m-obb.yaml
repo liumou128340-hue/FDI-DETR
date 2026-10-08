@@ -1,0 +1,60 @@
+# Ultralytics AGPL-3.0 License - https://ultralytics.com/license
+
+# FDI-DETR-M-OBB: DiffFreq backbone + CSFA + MANet + S2/P2 branch + YOLO OBB head.
+# Based on fdidetr-m.yaml. Only the final RTDETRDecoder is replaced by OBB.
+
+nc: 12
+scales:
+  m: [1.00, 1.00, 512]
+
+stage_repeats:
+  m: [2, 2, 2, 3]
+
+stage_channels:
+  m: [64, 128, 256, 512]
+
+backbone:
+  - [-1, 1, HGStem, [32, 64]] # 0-S2/4
+  - [-1, 2, DiffFreq_Bottleneck, [[1, 3, 5], True]] # 1-S2
+
+  - [-1, 1, DWConv, [128, 3, 2, 1, False]] # 2-S3/8
+  - [-1, 2, DiffFreq_Bottleneck, [[1, 3, 5], True]] # 3-S3
+
+  - [-1, 1, DWConv, [256, 3, 2, 1, False]] # 4-S4/16
+  - [-1, 2, DiffFreq_Bottleneck, [[1, 3, 5], True]] # 5-S4
+
+  - [-1, 1, DWConv, [512, 3, 2, 1, False]] # 6-S5/32
+  - [-1, 3, DiffFreq_Bottleneck, [[1, 3, 5], True]] # 7-S5
+
+head:
+  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 8, S5 -> 256
+  - [-1, 1, AIFI, [1024, 8]] # 9
+  - [-1, 1, Conv, [256, 1, 1]] # 10, P5
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 11
+  - [5, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 12, S4 -> 256
+  - [[-1, -2], 1, CSSCCFusion, [256, 4, 2]] # 13, CSFA
+  - [-1, 3, MANet, [256]] # 14, MANet
+  - [-1, 1, Conv, [256, 1, 1]] # 15, P4
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 16
+  - [3, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 17, S3 -> 256
+  - [[-1, -2], 1, CSSCCFusion, [256, 4, 2]] # 18, CSFA
+  - [-1, 3, MANet, [256]] # 19, MANet
+  - [-1, 1, Conv, [256, 1, 1]] # 20, P3
+
+  - [1, 1, Conv, [128, 3, 2]] # 21, S2 downsample
+  - [-1, 1, DiffFreq_Bottleneck, [[1, 3, 5], True]] # 22, P2FDI
+  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 23, P2 -> 256
+  - [[-1, 20], 1, CSSCCFusion, [256, 4, 2]] # 24, CSFA
+  - [-1, 3, MANet, [256]] # 25, N3
+
+  - [-1, 1, Conv, [256, 3, 2]] # 26, bottom-up downsample
+  - [[-1, 15], 1, CSSCCFusion, [256, 4, 2]] # 27, CSFA
+  - [-1, 3, MANet, [256]] # 28, N4
+
+  - [-1, 1, Conv, [256, 3, 2]] # 29, bottom-up downsample
+  - [[-1, 10], 1, CSSCCFusion, [256, 4, 2]] # 30, CSFA
+  - [-1, 3, MANet, [256]] # 31, N5
+
+  - [[25, 28, 31], 1, OBB, [nc, 1]]

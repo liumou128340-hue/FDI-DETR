@@ -1,0 +1,10 @@
+path: /userA02/DataSets/UAVDT
+
+train: UAVDT_train/images
+val: UAVDT_val/images
+nc: 3
+
+names:
+  0: car
+  1: truck
+  2: bus
