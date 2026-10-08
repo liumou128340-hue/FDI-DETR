@@ -1,9 +1,10 @@
-from pathlib import Path
 import json
 import os
+from pathlib import Path
 
 import yaml
 from PIL import Image
+
 from ultralytics import RTDETR
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"

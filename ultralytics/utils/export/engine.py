@@ -8,7 +8,14 @@ from pathlib import Path
 
 import torch
 
-from ultralytics.utils import IS_JETSON, LOGGER, TORCH_VERSION, ThreadingLocked, is_dgx, is_jetson
+from ultralytics.utils import (
+    IS_JETSON,
+    LOGGER,
+    TORCH_VERSION,
+    ThreadingLocked,
+    is_dgx,
+    is_jetson,
+)
 from ultralytics.utils.checks import check_requirements, check_tensorrt, check_version
 from ultralytics.utils.torch_utils import TORCH_2_4, TORCH_2_9
 
@@ -153,7 +160,7 @@ def modelopt_quantize_onnx(
         )
         return out_file
 
-    import modelopt.onnx.autocast as autocast
+    from modelopt.onnx import autocast
 
     out_file = str(Path(onnx_file).with_suffix(".fp16.onnx"))
     LOGGER.info(f"{prefix} converting ONNX to FP16 mixed precision with ModelOpt AutoCast...")

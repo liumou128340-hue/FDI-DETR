@@ -1,4 +1,4 @@
-﻿# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
 import contextlib
 import pickle
@@ -8,26 +8,27 @@ from copy import deepcopy
 from pathlib import Path
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ultralytics.nn.autobackend import check_class_names
 from ultralytics.nn.modules import (
-    DiffFreq_Bottleneck, DiffFreq_MultiConv,
-     HighFreqContrastAware, MidFreqDirectional, LowFreqSemantic,
-    MDPT,CSSCC_FC,CSSCCFusion,SAFDownFusion,ConcatSCFusion,FSDDown,UP,AMRC,
     AIFI,
+    AMRC,
     C1,
     C2,
     C2PSA,
     C3,
     C3TR,
+    CSSCC_FC,
     ELAN1,
+    MDPT,
     OBB,
     OBB26,
     PSA,
     SPP,
     SPPELAN,
     SPPF,
+    UP,
     A2C2f,
     AConv,
     ADown,
@@ -44,13 +45,17 @@ from ultralytics.nn.modules import (
     CBLinear,
     Classify,
     Concat,
+    ConcatSCFusion,
     Conv,
     Conv2,
     ConvTranspose,
+    CSSCCFusion,
     Detect,
+    DiffFreq_Bottleneck,
     DWConv,
     DWConvTranspose2d,
     Focus,
+    FSDDown,
     GhostBottleneck,
     GhostConv,
     HGBlock,
@@ -58,15 +63,16 @@ from ultralytics.nn.modules import (
     ImagePoolingAttn,
     Index,
     LRPCHead,
+    MANet,
     Pose,
     Pose26,
-    MANet,
     RepC3,
     RepConv,
     RepNCSPELAN4,
     RepVGGDW,
     ResNetLayer,
     RTDETRDecoder,
+    SAFDownFusion,
     SCDown,
     Segment,
     Segment26,
@@ -89,7 +95,13 @@ from ultralytics.utils import (
     colorstr,
     emojis,
 )
-from ultralytics.utils.checks import REMOTE_FILE_PREFIXES, check_file, check_requirements, check_suffix, check_yaml
+from ultralytics.utils.checks import (
+    REMOTE_FILE_PREFIXES,
+    check_file,
+    check_requirements,
+    check_suffix,
+    check_yaml,
+)
 from ultralytics.utils.loss import (
     E2ELoss,
     PoseLoss26,
@@ -1977,15 +1989,7 @@ def parse_model(d, ch, verbose=True):
             out_scale = int(args[2]) if len(args) > 2 else 1
             args = [c1, branch_c2, c_high, *args[1:]]
             c2 = branch_c2 * out_scale
-        elif m is SAFDownFusion:
-            c1 = ch[f[0]]
-            c_high = ch[f[1]]
-            branch_c2 = args[0]
-            if branch_c2 != nc:
-                branch_c2 = make_divisible(branch_c2 * width, 8)
-            args = [c1, branch_c2, c_high, *args[1:]]
-            c2 = 2 * branch_c2
-        elif m is ConcatSCFusion:
+        elif m is SAFDownFusion or m is ConcatSCFusion:
             c1 = ch[f[0]]
             c_high = ch[f[1]]
             branch_c2 = args[0]
@@ -2195,19 +2199,3 @@ def guess_model_task(model):
         "Explicitly define task for your model, i.e. 'task=detect', 'segment', 'classify', 'pose', 'obb' or 'semantic'."
     )
     return "detect"  # assume detect
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
