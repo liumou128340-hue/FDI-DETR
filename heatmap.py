@@ -9,15 +9,15 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-from ultralytics import RTDETR, YOLO
 
+from ultralytics import RTDETR, YOLO
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
 
 # Default run config. Edit these values if you want to run `python heatmap.py`
 # without typing command-line arguments every time.
 DEFAULT_MODEL = r"runs/detect/visdrone/stage/A-23P/weights/best.pt"
-# DEFAULT_MODEL = r"runs/detect/visdrone/moduel/baseline/weights/best.pt"
+# DEFAULT_MODEL = r"runs/detect/visdrone/module/baseline/weights/best.pt"
 DEFAULT_WEIGHTS = ""
 DEFAULT_SOURCE = r"runs\visualization\forwards\ori3.jpg"
 DEFAULT_SAVE_DIR = r"runs\visualization\forwards\heatmap"
@@ -134,7 +134,7 @@ def resolve_layers(model: torch.nn.Module, layers: str) -> list[torch.nn.Module]
 def letterbox_bgr(image: np.ndarray, imgsz: int) -> tuple[np.ndarray, float, tuple[int, int]]:
     h, w = image.shape[:2]
     scale = min(imgsz / h, imgsz / w)
-    nh, nw = int(round(h * scale)), int(round(w * scale))
+    nh, nw = round(h * scale), round(w * scale)
     resized = cv2.resize(image, (nw, nh), interpolation=cv2.INTER_LINEAR)
     canvas = np.full((imgsz, imgsz, 3), 114, dtype=np.uint8)
     top = (imgsz - nh) // 2
@@ -208,7 +208,9 @@ def pick_score(raw_output, conf: float, topk: int) -> torch.Tensor:
         cls_scores = pred[4:, :] if pred.shape[0] > pred.shape[1] else pred[:, 4:]
         if cls_scores.numel() == 0:
             return pred.max()
-        scores = cls_scores.max(dim=0).values if cls_scores.shape[0] < cls_scores.shape[1] else cls_scores.max(dim=1).values
+        scores = (
+            cls_scores.max(dim=0).values if cls_scores.shape[0] < cls_scores.shape[1] else cls_scores.max(dim=1).values
+        )
         keep = scores > conf
         scores = scores[keep] if keep.any() else scores
         return scores.topk(min(topk, scores.numel())).values.sum()
@@ -230,7 +232,9 @@ def overlay_heatmap(original_bgr: np.ndarray, cam: np.ndarray, alpha: float) -> 
     return cv2.addWeighted(original_bgr, 1.0 - alpha, heatmap, alpha, 0)
 
 
-def draw_boxes(model_wrapper, image_path: Path, image_bgr: np.ndarray, imgsz: int, conf: float, device: str) -> np.ndarray:
+def draw_boxes(
+    model_wrapper, image_path: Path, image_bgr: np.ndarray, imgsz: int, conf: float, device: str
+) -> np.ndarray:
     result = model_wrapper.predict(str(image_path), imgsz=imgsz, conf=conf, device=device, verbose=False)[0]
     plotted = result.plot(labels=False, conf=False)
     return plotted
@@ -280,8 +284,8 @@ def run(args):
             cam_square = cam_runner(score, (args.imgsz, args.imgsz))
 
             h, w = original.shape[:2]
-            crop_w = int(round(w * scale))
-            crop_h = int(round(h * scale))
+            crop_w = round(w * scale)
+            crop_h = round(h * scale)
             cam_crop = cam_square[pad_y : pad_y + crop_h, pad_x : pad_x + crop_w]
             cam = cv2.resize(cam_crop, (w, h), interpolation=cv2.INTER_LINEAR)
             cam -= cam.min()
@@ -305,14 +309,23 @@ def parse_args():
     parser.add_argument("--weights", default=DEFAULT_WEIGHTS, help="Optional weights path when --model is a yaml.")
     parser.add_argument("--source", default=DEFAULT_SOURCE, help="Image file or image directory.")
     parser.add_argument("--save-dir", default=DEFAULT_SAVE_DIR, help="Directory to save heatmaps.")
-    parser.add_argument("--layer", default=DEFAULT_LAYER, help="Target layer index/module path, comma-separated for fusion. Example: 25,28,31")
+    parser.add_argument(
+        "--layer",
+        default=DEFAULT_LAYER,
+        help="Target layer index/module path, comma-separated for fusion. Example: 25,28,31",
+    )
     parser.add_argument("--imgsz", type=int, default=DEFAULT_IMGSZ)
     parser.add_argument("--conf", type=float, default=DEFAULT_CONF)
     parser.add_argument("--topk", type=int, default=DEFAULT_TOPK, help="Use top-k detection scores as Grad-CAM target.")
     parser.add_argument("--alpha", type=float, default=DEFAULT_ALPHA, help="Heatmap overlay alpha.")
     parser.add_argument("--device", default=DEFAULT_DEVICE, help="CUDA id like 0, or cpu.")
     parser.add_argument("--half", action="store_true", default=DEFAULT_HALF, help="Use FP16 on CUDA.")
-    parser.add_argument("--draw-boxes", action="store_true", default=DEFAULT_DRAW_BOXES, help="Blend predicted boxes into the heatmap image.")
+    parser.add_argument(
+        "--draw-boxes",
+        action="store_true",
+        default=DEFAULT_DRAW_BOXES,
+        help="Blend predicted boxes into the heatmap image.",
+    )
     return parser.parse_args()
 
 
