@@ -142,19 +142,17 @@ def label_path_for_image(img_path):
     return img_path.parent.parent / "labels" / img_path.with_suffix(".txt").name
 
 
-def image_id(path):
-    return int(path.stem) if path.stem.isnumeric() else path.stem
-
-
 def load_ground_truth(data_yaml, split):
     data, root = resolve_dataset(data_yaml)
     names = data["names"]
     nc = len(names)
     gts = defaultdict(list)
-    image_ids = []
-    for img_path in image_paths(root, data[split]):
-        im_id = image_id(img_path)
-        image_ids.append(im_id)
+    img_files = image_paths(root, data[split])
+    image_id_map = {img_path.name: i + 1 for i, img_path in enumerate(img_files)}
+    image_id_map.update({img_path.stem: i + 1 for i, img_path in enumerate(img_files)})
+    image_ids = list(range(1, len(img_files) + 1))
+    for img_path in img_files:
+        im_id = image_id_map[img_path.name]
         with Image.open(img_path) as im:
             width, height = im.size
         label_path = label_path_for_image(img_path)
@@ -170,15 +168,21 @@ def load_ground_truth(data_yaml, split):
             for i, value in enumerate(coords):
                 poly.append(value * (width if i % 2 == 0 else height))
             gts[(im_id, cls + 1)].append({"poly": poly, "area": polygon_area(poly), "matched": {}})
-    return gts, image_ids, nc
+    return gts, image_ids, nc, image_id_map
 
 
-def load_predictions(pred_json, image_ids):
-    valid_ids = set(image_ids)
+def load_predictions(pred_json, image_id_map):
+    valid_int_ids = set(image_id_map.values())
     detections = []
     for item in json.loads(Path(pred_json).read_text(encoding="utf-8")):
-        im_id = item["image_id"]
-        if im_id not in valid_ids:
+        key = item.get("file_name")
+        if key not in image_id_map:
+            key = str(item.get("image_id", ""))
+        if key in image_id_map:
+            im_id = image_id_map[key]
+        elif isinstance(item.get("image_id"), int) and item["image_id"] in valid_int_ids:
+            im_id = item["image_id"]
+        else:
             continue
         if "poly" not in item:
             continue
@@ -278,7 +282,7 @@ def evaluate_area(gts, detections, nc, area_range, iou_thr):
 
 
 def evaluate_obb_coco_style(gt_data, detections, nc):
-    gts, _, _ = gt_data
+    gts = gt_data[0]
     results = {}
     for area_name, area_range in AREA_RANGES.items():
         aps = []
@@ -309,7 +313,7 @@ def main():
     model = YOLO(MODEL)
     save_dir = Path(PROJECT) / NAME
 
-    model.val(
+    metrics = model.val(
         task="obb",
         data=DATA,
         split=SPLIT,
@@ -323,15 +327,16 @@ def main():
         exist_ok=True,
         device=DEVICE,
     )
+    save_dir = Path(getattr(metrics, "save_dir", save_dir))
 
     pred_json = save_dir / "predictions.json"
     gt_data = load_ground_truth(DATA, SPLIT)
-    detections = load_predictions(pred_json, gt_data[1])
-    metrics = evaluate_obb_coco_style(gt_data, detections, gt_data[2])
+    detections = load_predictions(pred_json, gt_data[3])
+    obb_metrics = evaluate_obb_coco_style(gt_data, detections, gt_data[2])
 
     print("\nOBB COCO-style metrics using polygon IoU:")
     for key in ["AP", "AP50", "AP75", "APS", "APM", "APL"]:
-        value = metrics[key]
+        value = obb_metrics[key]
         print(f"{key}: {value:.4f}" if value >= 0 else f"{key}: nan")
 
 
