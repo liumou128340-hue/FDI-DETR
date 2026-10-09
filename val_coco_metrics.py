@@ -10,7 +10,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 MODEL = r"runs/detect/visdrone/stage/A-11/weights/best.pt"
-DATA = r"ultralytics/cfg/datasets/Visdrone_Yolo.yaml"
+DATA = r"ultralytics/cfg/datasets/visdrone.yaml"
 SPLIT = "val"
 IMGSZ = 640
 BATCH = 8

@@ -10,10 +10,10 @@ from ultralytics import YOLO
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-MODEL = r"CODrone/fdidetr_s_obb_1024/weights/best.pt"
+MODEL = r"runs/obb/CODrone/AM640/weights/best.pt"
 DATA = r"/userA02/lht/CODrone/CODrone.yaml"
 SPLIT = "val"
-IMGSZ = 1024
+IMGSZ = 640
 BATCH = 8
 WORKERS = 8
 DEVICE = 0

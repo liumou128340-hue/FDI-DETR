@@ -1,5 +1,6 @@
-﻿import os
+import os
 from ultralytics import RTDETR
+
 os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
 
 if __name__ == '__main__':
@@ -12,13 +13,13 @@ if __name__ == '__main__':
     results = model.train(
                             # data='ultralytics/cfg/datasets/Visdrone_Yolo.yaml',
                             # data='ultralytics/cfg/datasets/uavaste.yaml',
-                            # data='../aitod/aitod.yaml',
-                            data='../tinyperson/tinyperson.yaml',
-                            imgsz=640,amp=False,single_cls=True,deterministic=False,
+                            data='../aitod/aitod.yaml',
+                            # data='../tinyperson/tinyperson.yaml',
+                            imgsz=640,amp=False,single_cls=False,deterministic=False,
                             batch=8, workers=8,
 
-                            project="tinyperson",name='AM640',
-                            val=True,epochs=200,patience=0,
+                            project="aitod",name='AM640',
+                            val=True,epochs=400,patience=50,
 
                             optimizer='AdamW', lr0=0.001, cos_lr=True,lrf=0.1,
                             close_mosaic=40,weight_decay=0.0005,warmup_epochs=5,warmup_bias_lr=0.0001,
