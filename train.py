@@ -6,7 +6,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
 if __name__ == '__main__':
 
     # model = YOLO("yolov8s.yaml")
-    model = RTDETR(r"ultralytics/cfg/models/fdi-detr/fdidetr-m.yaml")
+    model = RTDETR(r"ultralytics/cfg/models/fdi-detr/fdidetr-s.yaml")
 
     model.load("rtdetr-l.pt")
 
@@ -15,14 +15,15 @@ if __name__ == '__main__':
                             # data='ultralytics/cfg/datasets/uavaste.yaml',
                             data='../aitod/aitod.yaml',
                             # data='../tinyperson/tinyperson.yaml',
+                            # data='../CODrone/CODrone.yaml',
                             imgsz=640,amp=False,single_cls=False,deterministic=False,
-                            batch=8, workers=8,
+                            batch=4, workers=8,
 
-                            project="aitod",name='AM640',
+                            project="aitod",name='AS640',
                             val=True,epochs=400,patience=50,
 
                             optimizer='AdamW', lr0=0.001, cos_lr=True,lrf=0.1,
-                            close_mosaic=40,weight_decay=0.0005,warmup_epochs=5,warmup_bias_lr=0.0001,
+                            close_mosaic=50,weight_decay=0.0005,warmup_epochs=5,warmup_bias_lr=0.0001,
                             # mosaic=0.0,mixup=0.0,copy_paste=0.0,erasing=0.0,auto_augment=None,
                             # scale=0.2,translate=0.05,fliplr=0.5,flipud=0.0,
                             # hsv_h=0.005,hsv_s=0.25,hsv_v=0.20,

@@ -9,8 +9,10 @@ from ultralytics import RTDETR
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-MODEL = r"runs/detect/visdrone/stage/A-11/weights/best.pt"
-DATA = r"ultralytics/cfg/datasets/visdrone.yaml"
+# MODEL = r"runs/detect/visdrone/stage/A-11/weights/best.pt"
+MODEL = r"runs/detect/CODrone/AM640/weights/best.pt"
+# DATA = r"ultralytics/cfg/datasets/visdrone.yaml"
+DATA = r'../CODrone/CODrone.yaml'
 SPLIT = "val"
 IMGSZ = 640
 BATCH = 8
