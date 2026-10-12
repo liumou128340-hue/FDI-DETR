@@ -1,0 +1,22 @@
+
+path: /userA02/lht/CODrone
+train: train/images
+val: val/images
+test: test/images
+# 类别总数
+nc: 12
+# 12个具体分类名称
+names:
+  0: car
+  1: truck
+  2: traffic_sign
+  3: people
+  4: motor
+  5: bicycle
+  6: traffic_light
+  7: tricycle
+  8: bridge
+  9: bus
+  10: boat
+  11: ship
+
