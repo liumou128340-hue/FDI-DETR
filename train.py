@@ -16,10 +16,10 @@ if __name__ == '__main__':
                             data='../aitod/aitod.yaml',
                             # data='../tinyperson/tinyperson.yaml',
                             # data='../CODrone/CODrone.yaml',
-                            imgsz=640,amp=False,single_cls=False,deterministic=False,
-                            batch=4, workers=8,
+                            imgsz=800,amp=False,single_cls=False,deterministic=False,
+                            batch=8, workers=8,
 
-                            project="aitod",name='AS640',
+                            project="aitod",name='AS800',
                             val=True,epochs=400,patience=50,
 
                             optimizer='AdamW', lr0=0.001, cos_lr=True,lrf=0.1,
