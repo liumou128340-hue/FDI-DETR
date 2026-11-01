@@ -62,7 +62,7 @@ platformdirs==4.5.0
 polars==1.44.2
 polars-runtime-32==1.44.2
 prettytable==3.16.0
-protobuf==6.33.0
+protobuf==7.36.2
 psutil==7.1.2
 pycocotools==2.0.10
 pydantic==2.12.3
