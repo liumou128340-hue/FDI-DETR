@@ -16,7 +16,7 @@ dill==0.4.0
 einops==0.8.1
 faster-coco-eval==1.7.0
 filelock==3.20.0
-fonttools==4.60.1
+fonttools==4.68.0
 fsspec==2025.9.0
 grad-cam==1.5.4
 grpcio==1.76.0

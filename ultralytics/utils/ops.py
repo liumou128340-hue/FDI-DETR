@@ -728,7 +728,9 @@ def linear_sum_assignment(cost_matrix):
     global _assignment_solver
     if _assignment_solver is None:  # resolve the backend once, then reuse it on every later call
         try:
-            from scipy.optimize import linear_sum_assignment as solver  # faster compiled C++ solver when installed
+            from scipy.optimize import (
+                linear_sum_assignment as solver,  # faster compiled C++ solver when installed
+            )
 
             _assignment_solver = solver
         except ImportError:
