@@ -1,4 +1,4 @@
-﻿# Ultralytics 馃殌 AGPL-3.0 License - https://ultralytics.com/license
+# Ultralytics 馃殌 AGPL-3.0 License - https://ultralytics.com/license
 
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ from typing import Any
 import numpy as np
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ultralytics import __version__
 from ultralytics.utils import (
@@ -225,11 +225,12 @@ def select_device(device="", newline=False, verbose=True):
             requested = [x for x in device.split(",") if x]
             visible_devices = [x for x in visible.split(",") if x.strip()]
             requested_count = max(len(requested), 1)
-            if requested_count > len(visible_devices):
-                requested_count = len(visible_devices)
+            requested_count = min(requested_count, len(visible_devices))
             device = ",".join(str(i) for i in range(requested_count))
         else:
-            os.environ["CUDA_VISIBLE_DEVICES"] = device  # set environment variable - must be before assert is_available()
+            os.environ["CUDA_VISIBLE_DEVICES"] = (
+                device  # set environment variable - must be before assert is_available()
+            )
         valid = (
             torch.cuda.device_count() >= len(device.split(","))
             if remap or respect_visible
@@ -828,7 +829,7 @@ def cuda_memory_usage(device=None):
     Yields:
         (dict): A dictionary with a key 'memory' initialized to 0, which will be updated with the reserved memory.
     """
-    cuda_info = dict(memory=0)
+    cuda_info = {"memory": 0}
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         try:
@@ -1052,4 +1053,3 @@ def attempt_compile(
     else:
         LOGGER.info(f"{prefix} compile complete in {t_compile:.1f}s (no warmup)")
     return model
-

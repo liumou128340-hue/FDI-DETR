@@ -19,7 +19,11 @@ from ultralytics.utils.checks import check_version
 from ultralytics.utils.instance import Instances
 from ultralytics.utils.metrics import bbox_ioa
 from ultralytics.utils.ops import segment2box, xywh2xyxy, xyxyxyxy2xywhr
-from ultralytics.utils.torch_utils import TORCHVISION_0_10, TORCHVISION_0_11, TORCHVISION_0_13
+from ultralytics.utils.torch_utils import (
+    TORCHVISION_0_10,
+    TORCHVISION_0_11,
+    TORCHVISION_0_13,
+)
 
 DEFAULT_MEAN = (0.0, 0.0, 0.0)
 DEFAULT_STD = (1.0, 1.0, 1.0)
@@ -2758,7 +2762,9 @@ def v8_transforms(dataset, imgsz: int, hyp: IterableSimpleNamespace):
         kpt_shape = dataset.data.get("kpt_shape", None)
         if len(flip_idx) == 0 and (hyp.fliplr > 0.0 or hyp.flipud > 0.0):
             hyp.fliplr = hyp.flipud = 0.0  # both fliplr and flipud require flip_idx
-            LOGGER.warning("No 'flip_idx' array defined in tinyperson.yaml, disabling 'fliplr' and 'flipud' augmentations.")
+            LOGGER.warning(
+                "No 'flip_idx' array defined in tinyperson.yaml, disabling 'fliplr' and 'flipud' augmentations."
+            )
         elif flip_idx and (len(flip_idx) != kpt_shape[0]):
             raise ValueError(f"tinyperson.yaml flip_idx={flip_idx} length must be equal to kpt_shape[0]={kpt_shape[0]}")
 
