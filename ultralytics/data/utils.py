@@ -32,7 +32,12 @@ from ultralytics.utils import (
     emojis,
     is_dir_writeable,
 )
-from ultralytics.utils.checks import check_file, check_font, is_ascii, normalize_platform_uri
+from ultralytics.utils.checks import (
+    check_file,
+    check_font,
+    is_ascii,
+    normalize_platform_uri,
+)
 from ultralytics.utils.downloads import download, safe_download, unzip_file
 from ultralytics.utils.ops import segments2boxes
 
@@ -765,7 +770,9 @@ class HUBDatasetStats:
 
             # Get dataset statistics
             if self.task == "classify":
-                from torchvision.datasets import ImageFolder  # scope for faster 'import ultralytics'
+                from torchvision.datasets import (
+                    ImageFolder,  # scope for faster 'import ultralytics'
+                )
 
                 dataset = ImageFolder(self.data[split])
 
@@ -819,7 +826,9 @@ class HUBDatasetStats:
             if split_path is None:
                 continue
             if self.task == "classify":
-                from torchvision.datasets import ImageFolder  # scope for faster 'import ultralytics'
+                from torchvision.datasets import (
+                    ImageFolder,  # scope for faster 'import ultralytics'
+                )
 
                 dataset = ImageFolder(split_path)
                 im_files = [f for f, _ in dataset.imgs]

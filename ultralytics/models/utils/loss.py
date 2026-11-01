@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ultralytics.utils.loss import FocalLoss, VarifocalLoss
 from ultralytics.utils.metrics import bbox_iou
@@ -469,8 +469,8 @@ class RTDETRDetectionLoss(DETRLoss):
 class DEIMRTDETRDetectionLoss(RTDETRDetectionLoss):
     """RT-DETR loss with DEIM-style MAL classification and dense decoder-layer matching.
 
-    This is an Ultralytics-compatible adaptation. It keeps the RT-DETR decoder output
-    contract unchanged and only changes the training assignment/loss side.
+    This is an Ultralytics-compatible adaptation. It keeps the RT-DETR decoder output contract unchanged and only
+    changes the training assignment/loss side.
     """
 
     def __init__(
@@ -524,7 +524,9 @@ class DEIMRTDETRDetectionLoss(RTDETRDetectionLoss):
         return {name_class: loss_cls.squeeze() * self.loss_gain["class"]}
 
     @staticmethod
-    def _merge_match_indices(match_indices_per_layer: list[list[tuple[torch.Tensor, torch.Tensor]]]) -> list[tuple[torch.Tensor, torch.Tensor]]:
+    def _merge_match_indices(
+        match_indices_per_layer: list[list[tuple[torch.Tensor, torch.Tensor]]],
+    ) -> list[tuple[torch.Tensor, torch.Tensor]]:
         """Merge decoder-layer O2O matches into a denser query set for box supervision."""
         if not match_indices_per_layer:
             return []
@@ -541,7 +543,9 @@ class DEIMRTDETRDetectionLoss(RTDETRDetectionLoss):
 
             if not src_parts:
                 device = match_indices_per_layer[0][b][0].device
-                merged.append((torch.zeros(0, dtype=torch.long, device=device), torch.zeros(0, dtype=torch.long, device=device)))
+                merged.append(
+                    (torch.zeros(0, dtype=torch.long, device=device), torch.zeros(0, dtype=torch.long, device=device))
+                )
                 continue
 
             src_cat = torch.cat(src_parts)
@@ -718,4 +722,3 @@ class DEIMRTDETRDetectionLoss(RTDETRDetectionLoss):
             total_loss.update({f"{k}_dn": torch.tensor(0.0, device=self.device) for k in total_loss})
 
         return total_loss
-
