@@ -55,7 +55,13 @@ from ultralytics.utils import (
     WEIGHTS_DIR,
     is_github_action_running,
 )
-from ultralytics.utils.checks import IS_PYTHON_MINIMUM_3_13, check_imgsz, check_requirements, check_yolo, is_rockchip
+from ultralytics.utils.checks import (
+    IS_PYTHON_MINIMUM_3_13,
+    check_imgsz,
+    check_requirements,
+    check_yolo,
+    is_rockchip,
+)
 from ultralytics.utils.files import file_size
 from ultralytics.utils.torch_utils import get_cpu_info, select_device
 
