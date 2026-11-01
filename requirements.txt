@@ -18,7 +18,7 @@ faster-coco-eval==1.7.0
 filelock==3.20.0
 fonttools==4.60.1
 fsspec==2025.9.0
-grad-cam==1.5.4
+grad-cam==1.5.7
 grpcio==1.76.0
 hf-xet==1.2.0
 huggingface-hub==0.36.0
