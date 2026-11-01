@@ -31,7 +31,7 @@ kiwisolver==1.4.9
 lazy_loader==0.4
 mamba-ssm @ file:///userA02/lyp/mamba_ssm-2.2.2%2Bcu118torch2.3cxx11abiFALSE-cp310-cp310-linux_x86_64.whl#sha256=e746cbceb01bee548e93bf46a78e3c3333520ec1c369f3f2c95a1e51cf821264
 Markdown==3.9
-markdown-it-py==4.0.0
+markdown-it-py==4.2.0
 MarkupSafe==3.0.3
 matplotlib==3.10.7
 mdurl==0.1.2

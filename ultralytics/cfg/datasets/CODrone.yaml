@@ -1,4 +1,3 @@
-
 path: /userA02/lht/CODrone
 train: train/images
 val: val/images
@@ -19,4 +18,3 @@ names:
   9: bus
   10: boat
   11: ship
-
